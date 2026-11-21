@@ -507,4 +507,3 @@ public final class ClientFeatures {
         @Override public boolean isPauseScreen(){return false;}
     }
 }
-}
