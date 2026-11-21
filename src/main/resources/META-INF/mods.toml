@@ -4,7 +4,7 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="nexver_visuals"
-version="0.3.0"
+version="0.4.0"
 displayName="Nexver Visuals"
 authors="Nexver"
 description='''Русский клиентский HUD и набор визуальных настроек для Minecraft 1.20.1.'''
