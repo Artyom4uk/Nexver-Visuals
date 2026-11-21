@@ -209,15 +209,15 @@ public final class ClientFeatures {
     }
 
     private static final class NexverMenu extends Screen {
-        private static final int BG = 0xF20B0F18, PANEL = 0xFF111824, CARD = 0xFF182231;
-        private static final int CARD_HOVER = 0xFF202E40, MUTED = 0xFF8291A5, WHITE = 0xFFF0F5FC;
+        private static final int BG = 0xEE0A0E16, PANEL = 0xFF101722, CARD = 0xFF171F2B;
+        private static final int CARD_HOVER = 0xFF202B3A, MUTED = 0xFF7F8DA1, WHITE = 0xFFF0F4FA;
         private int page = 1;
         private final long openedAt = Util.getMillis();
 
         private NexverMenu() { super(Component.literal("NEXVER VISUALS")); }
 
-        private int panelWidth() { return Math.min(690, this.width - 24); }
-        private int panelHeight() { return Math.min(410, this.height - 24); }
+        private int panelWidth() { return Math.min(620, this.width - 28); }
+        private int panelHeight() { return Math.min(360, this.height - 24); }
         private int left() { return (this.width - panelWidth()) / 2; }
         private int top() { return (this.height - panelHeight()) / 2; }
         private int contentLeft() { return left() + 20; }
@@ -225,114 +225,119 @@ public final class ClientFeatures {
 
         @Override
         public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
-            gui.fill(0, 0, width, height, 0xB9000000);
+            gui.fill(0, 0, width, height, 0x99030810);
             int l = left(), t = top(), w = panelWidth(), h = panelHeight();
-            gui.fill(l - 3, t - 3, l + w + 3, t + h + 3, 0x50000000);
+            gui.fill(l - 2, t - 2, l + w + 2, t + h + 2, 0x50000000);
             gui.fill(l, t, l + w, t + h, BG);
             gui.fill(l + 1, t + 1, l + w - 1, t + h - 1, PANEL);
             gui.fill(l, t, l + w, t + 2, accent);
+
             drawBrand(gui);
             drawTabs(gui, mouseX, mouseY);
-            gui.fill(l + 18, t + 68, l + w - 18, t + 69, 0xFF293648);
+            gui.fill(l + 18, t + 70, l + w - 18, t + 71, 0xFF293444);
 
             if (page == 0) drawVisualPage(gui, mouseX, mouseY);
             else if (page == 1) drawHudPage(gui, mouseX, mouseY);
             else drawUtilitiesPage(gui, mouseX, mouseY);
 
-            float progress = Mth.clamp((Util.getMillis() - openedAt) / 170.0f, 0.0f, 1.0f);
-            if (progress < 1.0f) gui.fill(l, t, l + w, t + h, ((int)(0x25 * (1.0f - progress))) << 24);
+            float progress = Mth.clamp((Util.getMillis() - openedAt) / 150.0f, 0.0f, 1.0f);
+            if (progress < 1.0f) gui.fill(l, t, l + w, t + h,
+                    ((int)(0x20 * (1.0f - progress))) << 24);
             super.render(gui, mouseX, mouseY, partialTick);
         }
 
         private void drawBrand(GuiGraphics gui) {
-            int x = left() + 20, y = top() + 17;
+            int x = left() + 20, y = top() + 15;
             gui.drawString(font, "NEXVER", x, y, WHITE, false);
-            gui.drawString(font, "VISUALS", x + font.width("NEXVER") + 7, y, accent, false);
-            gui.drawString(font, "CLIENT  /  0.3.1", x, y + 14, MUTED, false);
-            int sx = left() + panelWidth() - 94;
-            gui.fill(sx, y + 2, sx + 7, y + 9, 0xFF65D68A);
-            gui.drawString(font, "АКТИВЕН", sx + 13, y + 1, 0xFF9CB4A7, false);
+            gui.drawString(font, "VISUALS", x + font.width("NEXVER") + 6, y, accent, false);
+            gui.drawString(font, "CLIENT  /  0.3.2", x, y + 13, MUTED, false);
+            int sx = left() + panelWidth() - 83;
+            gui.fill(sx, y + 2, sx + 6, y + 8, 0xFF65D68A);
+            gui.drawString(font, "АКТИВЕН", sx + 11, y, 0xFF9CB4A7, false);
         }
 
         private void drawTabs(GuiGraphics gui, int mx, int my) {
             String[] labels = {"ВИЗУАЛЫ", "HUD", "УТИЛИТЫ"};
-            int x = left() + 20, y = top() + 43;
+            int x = left() + 17, y = top() + 42;
             for (int i = 0; i < labels.length; i++) {
-                int tx = x + i * 112;
+                int tx = x + i * 101;
                 boolean selected = page == i;
-                boolean hover = inside(mx, my, tx - 5, y - 5, 100, 25);
-                if (selected || hover) gui.fill(tx - 5, y - 5, tx + 95, y + 20,
-                        selected ? 0xFF24364A : 0xFF1B2939);
-                gui.drawString(font, labels[i], tx + 8, y + 3, selected ? accent : 0xFFB4C0CE, false);
-                if (selected) gui.fill(tx - 5, y + 18, tx + 95, y + 20, accent);
+                boolean hover = inside(mx, my, tx - 4, y - 4, 91, 24);
+                if (selected || hover) gui.fill(tx - 4, y - 4, tx + 87, y + 20,
+                        selected ? 0xFF202D3D : 0xFF182331);
+                gui.drawString(font, labels[i], tx + 7, y + 3,
+                        selected ? accent : 0xFFB4C0CE, false);
+                if (selected) gui.fill(tx - 4, y + 18, tx + 87, y + 20, accent);
             }
         }
 
         private void drawPageHeading(GuiGraphics gui, String title, String subtitle) {
             int x = contentLeft(), y = top() + 82;
             gui.drawString(font, title, x, y, WHITE, false);
-            gui.drawString(font, subtitle, x, y + 14, MUTED, false);
+            gui.drawString(font, subtitle, x, y + 13, MUTED, false);
         }
 
         private void drawHudPage(GuiGraphics gui, int mx, int my) {
-            drawPageHeading(gui, "ЭЛЕМЕНТЫ HUD", "Информация, которую можно вывести поверх игры");
-            int x = contentLeft(), y = top() + 119, gap = 10;
+            drawPageHeading(gui, "ЭЛЕМЕНТЫ HUD", "Информация поверх игрового мира");
+            int x = contentLeft(), y = top() + 112, gap = 8;
             int cardW = (contentWidth() - gap) / 2;
             drawCard(gui,mx,my,x,y,cardW,"СЧЁТЧИК FPS","Частота кадров",showFps,0);
             drawCard(gui,mx,my,x+cardW+gap,y,cardW,"КООРДИНАТЫ","Позиция в мире",showCoordinates,1);
-            drawCard(gui,mx,my,x,y+48,cardW,"СЕТЕВОЙ ПИНГ","Задержка соединения",showPing,2);
-            drawCard(gui,mx,my,x+cardW+gap,y+48,cardW,"КЛАВИШИ","WASD и прыжок",showKeystrokes,3);
-            drawCard(gui,mx,my,x,y+96,cardW,"ЭФФЕКТЫ ЗЕЛИЙ","Название и длительность",showPotions,4);
-            drawCard(gui,mx,my,x+cardW+gap,y+96,cardW,"ПРЕДМЕТ В РУКЕ","Название и количество",showItemOverlay,5);
-            drawFooter(gui, "Изменения сохраняются автоматически");
+            drawCard(gui,mx,my,x,y+42,cardW,"СЕТЕВОЙ ПИНГ","Задержка соединения",showPing,2);
+            drawCard(gui,mx,my,x+cardW+gap,y+42,cardW,"КЛАВИШИ","WASD и прыжок",showKeystrokes,3);
+            drawCard(gui,mx,my,x,y+84,cardW,"ЭФФЕКТЫ ЗЕЛИЙ","Название и длительность",showPotions,4);
+            drawCard(gui,mx,my,x+cardW+gap,y+84,cardW,"ПРЕДМЕТ В РУКЕ","Название и количество",showItemOverlay,5);
+            drawFooter(gui, "Настройки сохраняются автоматически");
         }
 
         private void drawVisualPage(GuiGraphics gui, int mx, int my) {
-            drawPageHeading(gui, "ВИЗУАЛЬНЫЕ ЭФФЕКТЫ", "Настройки внешнего вида игрового интерфейса");
-            int x = contentLeft(), y = top() + 119, gap = 10;
+            drawPageHeading(gui, "ВИЗУАЛЬНЫЕ ЭФФЕКТЫ", "Внешний вид игрового интерфейса");
+            int x = contentLeft(), y = top() + 112, gap = 8;
             int cardW = (contentWidth() - gap) / 2;
             drawCard(gui,mx,my,x,y,cardW,"СВОЙ ПРИЦЕЛ","Минималистичный цветной прицел",showCrosshair,6);
-            gui.fill(x + cardW + gap, y, x + 2 * cardW + gap, y + 42, CARD);
-            gui.drawString(font, "ЛОКАЛЬНЫЕ ЭФФЕКТЫ", x + cardW + gap + 10, y + 8, WHITE, false);
-            gui.drawString(font, "Новые визуалы — позже", x + cardW + gap + 10, y + 23, MUTED, false);
-            drawFooter(gui, "Только визуальные настройки клиента");
+            gui.fill(x + cardW + gap, y, x + 2 * cardW + gap, y + 36, CARD);
+            gui.drawString(font, "ЛОКАЛЬНЫЕ ЭФФЕКТЫ", x + cardW + gap + 10, y + 6, WHITE, false);
+            gui.drawString(font, "Новые визуалы добавим", x + cardW + gap + 10, y + 20, MUTED, false);
+            drawFooter(gui, "Только локальные визуальные настройки");
         }
 
         private void drawUtilitiesPage(GuiGraphics gui, int mx, int my) {
             drawPageHeading(gui, "УТИЛИТЫ", "Быстрые переключатели и оформление");
-            int x = contentLeft(), y = top() + 119, gap = 10;
+            int x = contentLeft(), y = top() + 112, gap = 8;
             int cardW = (contentWidth() - gap) / 2;
             drawCard(gui,mx,my,x,y,cardW,"ПОЛНАЯ ЯРКОСТЬ","Горячая клавиша K",fullBright,7);
             drawCard(gui,mx,my,x+cardW+gap,y,cardW,"ФОН HUD","Подложка под текст",hudBackground,8);
 
-            gui.drawString(font, "ЦВЕТ АКЦЕНТА", x, y + 62, WHITE, false);
-            gui.drawString(font, "Выбери цвет переключателей и подсветки", x, y + 77, MUTED, false);
+            gui.drawString(font, "ЦВЕТ АКЦЕНТА", x, y + 53, WHITE, false);
+            gui.drawString(font, "Цвет переключателей и подсветки", x, y + 66, MUTED, false);
             int[] colors={0xFF65D6FF,0xFF9B83FF,0xFFFF78B7,0xFF75D6A0,0xFFFFB86B};
-            String[] names={"ЛЁД","ФИОЛЕТОВЫЙ","РОЗОВЫЙ","МЯТНЫЙ","ЯНТАРНЫЙ"};
-            int swatchX = x, swatchY = y + 103;
+            String[] names={"ЛЁД","ФИОЛЕТ","РОЗОВЫЙ","МЯТНЫЙ","ЯНТАРЬ"};
+            int swatchY = y + 88;
             for(int i=0;i<colors.length;i++){
-                int cx = swatchX + i * 91;
+                int cx = x + i * 86;
                 boolean selected = accent == colors[i];
-                gui.fill(cx, swatchY, cx + 82, swatchY + 34, selected ? 0xFF243448 : CARD);
-                gui.fill(cx + 8, swatchY + 9, cx + 22, swatchY + 23, colors[i]);
-                gui.drawString(font, names[i], cx + 28, swatchY + 13, selected ? WHITE : MUTED, false);
+                gui.fill(cx, swatchY, cx + 78, swatchY + 27, selected ? 0xFF243448 : CARD);
+                gui.fill(cx + 7, swatchY + 7, cx + 19, swatchY + 19, colors[i]);
+                gui.drawString(font, names[i], cx + 24, swatchY + 10, selected ? WHITE : MUTED, false);
             }
-            drawFooter(gui, "Меню: RIGHT SHIFT     •     Яркость: K");
+            drawFooter(gui, "МЕНЮ: RIGHT SHIFT     •     ЯРКОСТЬ: K");
         }
 
         private void drawFooter(GuiGraphics gui, String text) {
-            gui.drawString(font, text, contentLeft(), top() + panelHeight() - 22, MUTED, false);
+            gui.fill(left() + 18, top() + panelHeight() - 31,
+                    left() + panelWidth() - 18, top() + panelHeight() - 30, 0xFF293444);
+            gui.drawString(font, text, contentLeft(), top() + panelHeight() - 20, MUTED, false);
         }
 
         private void drawCard(GuiGraphics gui,int mx,int my,int x,int y,int w,String title,String desc,boolean enabled,int id) {
-            boolean hover = inside(mx,my,x,y,w,42);
-            gui.fill(x,y,x+w,y+42,hover?CARD_HOVER:CARD);
-            gui.fill(x,y,x+2,y+42,enabled?accent:0xFF344255);
-            gui.drawString(font,title,x+10,y+7,WHITE,false);
-            gui.drawString(font,desc,x+10,y+22,MUTED,false);
-            int sx = x + w - 38;
-            gui.fill(sx,y+12,sx+28,y+28,enabled?accent:0xFF3A485B);
-            gui.fill(enabled?sx+15:sx+2,y+14,enabled?sx+26:sx+13,y+26,0xFFF4F7FB);
+            boolean hover = inside(mx,my,x,y,w,36);
+            gui.fill(x,y,x+w,y+36,hover?CARD_HOVER:CARD);
+            gui.fill(x,y,x+2,y+36,enabled?accent:0xFF344255);
+            gui.drawString(font,title,x+9,y+5,WHITE,false);
+            gui.drawString(font,desc,x+9,y+19,MUTED,false);
+            int sx = x + w - 34;
+            gui.fill(sx,y+10,sx+25,y+25,enabled?accent:0xFF354153);
+            gui.fill(enabled?sx+13:sx+2,y+12,enabled?sx+23:sx+12,y+23,0xFFF4F7FB);
         }
 
         private boolean inside(double mx,double my,int x,int y,int w,int h) {
@@ -343,20 +348,20 @@ public final class ClientFeatures {
         public boolean mouseClicked(double mx,double my,int button) {
             if(button!=0) return super.mouseClicked(mx,my,button);
 
-            int tabX = left() + 15, tabY = top() + 38;
-            if (inside(mx,my,tabX,tabY,105,30)) { page=0; return true; }
-            if (inside(mx,my,tabX+112,tabY,105,30)) { page=1; return true; }
-            if (inside(mx,my,tabX+224,tabY,105,30)) { page=2; return true; }
+            int tabX = left() + 13, tabY = top() + 37;
+            if (inside(mx,my,tabX,tabY,96,29)) { page=0; return true; }
+            if (inside(mx,my,tabX+101,tabY,96,29)) { page=1; return true; }
+            if (inside(mx,my,tabX+202,tabY,96,29)) { page=2; return true; }
 
-            int x=contentLeft(), y=top()+119, gap=10, cardW=(contentWidth()-gap)/2;
+            int x=contentLeft(), y=top()+112, gap=8, cardW=(contentWidth()-gap)/2;
             if(page==1){
                 int id=-1;
-                if(inside(mx,my,x,y,cardW,42)) id=0;
-                else if(inside(mx,my,x+cardW+gap,y,cardW,42)) id=1;
-                else if(inside(mx,my,x,y+48,cardW,42)) id=2;
-                else if(inside(mx,my,x+cardW+gap,y+48,cardW,42)) id=3;
-                else if(inside(mx,my,x,y+96,cardW,42)) id=4;
-                else if(inside(mx,my,x+cardW+gap,y+96,cardW,42)) id=5;
+                if(inside(mx,my,x,y,cardW,36)) id=0;
+                else if(inside(mx,my,x+cardW+gap,y,cardW,36)) id=1;
+                else if(inside(mx,my,x,y+42,cardW,36)) id=2;
+                else if(inside(mx,my,x+cardW+gap,y+42,cardW,36)) id=3;
+                else if(inside(mx,my,x,y+84,cardW,36)) id=4;
+                else if(inside(mx,my,x+cardW+gap,y+84,cardW,36)) id=5;
                 switch(id){
                     case 0: showFps=!showFps; break;
                     case 1: showCoordinates=!showCoordinates; break;
@@ -368,16 +373,16 @@ public final class ClientFeatures {
                 }
                 if(id>=0) saveConfig();
             } else if(page==0){
-                if(inside(mx,my,x,y,cardW,42)){showCrosshair=!showCrosshair;saveConfig();}
+                if(inside(mx,my,x,y,cardW,36)){showCrosshair=!showCrosshair;saveConfig();}
             } else {
-                if(inside(mx,my,x,y,cardW,42)){setFullBright(Minecraft.getInstance(),!fullBright);}
-                else if(inside(mx,my,x+cardW+gap,y,cardW,42)){hudBackground=!hudBackground;saveConfig();}
+                if(inside(mx,my,x,y,cardW,36)){setFullBright(Minecraft.getInstance(),!fullBright);}
+                else if(inside(mx,my,x+cardW+gap,y,cardW,36)){hudBackground=!hudBackground;saveConfig();}
                 else {
                     int[] colors={0xFF65D6FF,0xFF9B83FF,0xFFFF78B7,0xFF75D6A0,0xFFFFB86B};
-                    int swatchY=y+103;
+                    int swatchY=y+88;
                     for(int i=0;i<colors.length;i++){
-                        int cx=x+i*91;
-                        if(inside(mx,my,cx,swatchY,82,34)){accent=colors[i];saveConfig();break;}
+                        int cx=x+i*86;
+                        if(inside(mx,my,cx,swatchY,78,27)){accent=colors[i];saveConfig();break;}
                     }
                 }
             }
@@ -390,4 +395,5 @@ public final class ClientFeatures {
             return super.keyPressed(keyCode,scanCode,modifiers);
         }
     }
+}
 }
