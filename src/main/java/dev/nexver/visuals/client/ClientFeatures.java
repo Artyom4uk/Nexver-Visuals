@@ -175,7 +175,7 @@ public final class ClientFeatures {
             int y = 10;
             for (MobEffectInstance effect : mc.player.getActiveEffects()) {
                 String name = effect.getEffect().getDisplayName().getString();
-                String duration = MobEffectInstance.FORMAT_DURATION.format(effect, 1.0F);
+                int ticks = effect.getDuration();\n                String duration = ticks < 0 ? "∞" : String.format("%d:%02d", ticks / 1200, (ticks / 20) % 60);
                 String text = name + " " + duration;
                 gui.fill(x - 5, y - 3, x + 108, y + 12, 0xB9101420);
                 gui.fill(x - 5, y - 3, x - 2, y + 12, accent);
