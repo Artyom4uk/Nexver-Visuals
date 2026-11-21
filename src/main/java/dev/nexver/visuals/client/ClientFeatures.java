@@ -212,15 +212,19 @@ public final class ClientFeatures {
     }
 
     private static final class NexverMenu extends Screen {
-        private static final int PANEL = 0xF20D111B, SURFACE = 0xFF141A26;
-        private static final int ROW = 0xFF191F2C, ROW_HOVER = 0xFF222B3B;
-        private static final int MUTED = 0xFF778399, TEXT = 0xFFE8EDF6;
+        private static final int PANEL = 0xF20D1018;
+        private static final int SURFACE = 0xF9161A25;
+        private static final int ROW = 0xD91B202C;
+        private static final int ROW_HOVER = 0xEF252B3A;
+        private static final int TEXT = 0xFFF1F2F8;
+        private static final int MUTED = 0xFF85899B;
+        private static final int PURPLE = 0xFF8B5CF6;
         private static final String[] VISUALS = {
                 "Aspect Ratio|Формат игрового изображения|-1",
-                "Crosshair|Настраиваемый прицел|1",
-                "Full Bright|Полная яркость|2",
                 "China Hit|Эффект попадания|-1",
+                "Crosshair|Настраиваемый прицел|1",
                 "Custom Hand|Настройка руки|-1",
+                "Full Bright|Полная яркость|2",
                 "Hit Color|Цвет попадания|-1",
                 "Hitbox Customizer|Визуализация хитбоксов|-1",
                 "Jump Circles|Круги при прыжке|-1",
@@ -240,110 +244,138 @@ public final class ClientFeatures {
                 "Ping|Задержка соединения|12"
         };
         private static final String[] UTILITIES = {
-                "HUD Background|Фон элементов HUD|20",
-                "HUD Toggle|Быстрое скрытие HUD|21"
+                "Keybinds|Список активных клавиш|-1",
+                "Brightness|Быстрое управление яркостью|2",
+                "HUD Toggle|Быстрое скрытие HUD|21",
+                "HUD Background|Фон элементов HUD|20"
         };
 
         private int page = 0;
         private boolean searchOpen = false;
         private boolean settingsOpen = false;
         private String searchText = "";
+        private int scroll = 0;
         private final long openedAt = Util.getMillis();
 
         private NexverMenu() { super(Component.literal("NEXVER VISUALS")); }
 
-        private int pw() { return Math.min(720, width - 28); }
-        private int ph() { return Math.min(382, height - 24); }
+        private int pw() { return Math.min(760, width - 32); }
+        private int ph() { return Math.min(410, height - 28); }
         private int px() { return (width - pw()) / 2; }
         private int py() { return (height - ph()) / 2; }
-        private int innerX() { return px() + 22; }
-        private int innerW() { return pw() - 44; }
+        private int contentX() { return px() + 22; }
+        private int contentW() { return pw() - 44; }
+        private int contentTop() { return py() + 100; }
+        private int contentBottom() { return py() + ph() - 48; }
+        private int rowHeight() { return 39; }
+        private int rowGap() { return 8; }
 
         @Override
         public void render(GuiGraphics g, int mx, int my, float partialTick) {
             g.fill(0, 0, width, height, 0x99040810);
             int x=px(), y=py(), w=pw(), h=ph();
-            g.fill(x-3,y-3,x+w+3,y+h+3,0x44000000);
+            g.fill(x-5,y-5,x+w+5,y+h+5,0x44000000);
             g.fill(x,y,x+w,y+h,PANEL);
             g.fill(x+1,y+1,x+w-1,y+h-1,SURFACE);
-            g.fill(x,y,x+w,y+2,accent);
+            g.fill(x,y,x+w,y+2,PURPLE);
 
             drawHeader(g,mx,my);
-            g.fill(x+18,y+57,x+w-18,y+58,0xFF293344);
+            g.fill(x+20,y+57,x+w-20,y+58,0xFF292D3A);
+            drawSectionLabel(g);
+            g.enableScissor(x+12,contentTop(),x+w-12,contentBottom());
             drawModules(g,mx,my);
-            drawBottomBar(g);
+            g.disableScissor();
+            drawFooter(g);
             if(settingsOpen) drawSettings(g,mx,my);
 
-            float a=Mth.clamp((Util.getMillis()-openedAt)/180.0f,0.0f,1.0f);
+            float a=Mth.clamp((Util.getMillis()-openedAt)/170.0f,0.0f,1.0f);
             if(a<1.0f) g.fill(x,y,x+w,y+h,((int)(0x18*(1.0f-a)))<<24);
             super.render(g,mx,my,partialTick);
         }
 
         private void drawHeader(GuiGraphics g,int mx,int my) {
             int x=px(),y=py();
-            g.fill(x+20,y+17,x+40,y+37,accent);
-            g.drawString(font,"N",x+26,y+23,0xFF101522,false);
-            g.drawString(font,"NEXVER",x+48,y+17,TEXT,false);
-            g.drawString(font,"VISUALS",x+48+font.width("NEXVER")+6,y+17,accent,false);
+            g.fill(x+20,y+17,x+43,y+40,PURPLE);
+            g.drawString(font,"N",x+28,y+24,0xFFFFFFFF,false);
+            g.drawString(font,"NEXVER",x+52,y+17,TEXT,false);
+            g.drawString(font,"VISUALS",x+52+font.width("NEXVER")+6,y+17,PURPLE,false);
+            g.drawString(font,"CLIENT  /  0.5.0",x+52,y+31,MUTED,false);
 
             String[] tabs={"ВИЗУАЛЫ","HUD","УТИЛИТЫ"};
-            int[] widths={88,52,83};
-            int tx=x+190;
+            int[] widths={91,48,78};
+            int tx=x+pw()/2-145;
             for(int i=0;i<tabs.length;i++){
                 boolean selected=page==i;
                 int tw=widths[i];
-                if(selected) g.fill(tx-10,y+12,tx+tw,y+42,0xFF202B3B);
-                else if(inside(mx,my,tx-10,y+12,tw+10,30)) g.fill(tx-10,y+12,tx+tw,y+42,0xFF192331);
+                if(selected) {
+                    g.fill(tx-12,y+12,tx+tw+10,y+43,0xFF252033);
+                    g.fill(tx-12,y+41,tx+tw+10,y+43,PURPLE);
+                } else if(inside(mx,my,tx-12,y+12,tw+22,31)) {
+                    g.fill(tx-12,y+12,tx+tw+10,y+43,0xFF1D2230);
+                }
                 g.drawString(font,tabs[i],tx,y+23,selected?TEXT:MUTED,false);
-                if(selected) g.fill(tx-10,y+40,tx+tw,y+42,accent);
-                tx+=tw+22;
+                tx+=tw+26;
             }
 
             int right=x+pw()-126;
-            if(searchOpen){
-                g.fill(right-105,y+14,right+2,y+39,0xFF202938);
-                g.drawString(font,searchText.isEmpty()?"Поиск...":searchText,right-98,y+23,searchText.isEmpty()?MUTED:TEXT,false);
+            if(searchOpen) {
+                g.fill(right-105,y+14,right+4,y+39,0xFF222735);
+                g.drawString(font,searchText.isEmpty()?"Поиск модулей":searchText,right-98,y+23,searchText.isEmpty()?MUTED:TEXT,false);
             } else {
                 g.drawString(font,"⌕",right-8,y+20,inside(mx,my,right-13,y+12,22,28)?TEXT:MUTED,false);
             }
-            g.drawString(font,"⚙",right+20,y+20,settingsOpen?accent:MUTED,false);
-            g.fill(right+56,y+16,right+76,y+36,0xFF303B4D);
-            g.fill(right+71,y+31,right+77,y+37,0xFF65D68A);
+            g.drawString(font,"⚙",right+20,y+20,settingsOpen?PURPLE:MUTED,false);
+            g.fill(right+56,y+16,right+76,y+36,0xFF303747);
+            g.fill(right+70,y+30,right+77,y+37,0xFF72D6A0);
+        }
+
+        private void drawSectionLabel(GuiGraphics g) {
+            String title=page==0?"ВИЗУАЛЫ":page==1?"ЭЛЕМЕНТЫ HUD":"УТИЛИТЫ";
+            String subtitle=page==0?"Визуальные настройки игрового клиента":
+                    page==1?"Информация и виджеты поверх игрового мира":"Быстрые инструменты и управление";
+            g.drawString(font,title,contentX(),py()+70,TEXT,false);
+            g.drawString(font,subtitle,contentX(),py()+84,MUTED,false);
         }
 
         private String[] modulesForPage() { return page==0?VISUALS:page==1?HUD:UTILITIES; }
 
         private void drawModules(GuiGraphics g,int mx,int my) {
-            int x=innerX(), y=py()+78, gap=8, colW=(innerW()-gap)/2;
+            int x=contentX(), y=contentTop(), gap=12, colW=(contentW()-gap)/2;
             String[] entries=modulesForPage();
             int row=0;
             for(String entry:entries) {
-                String[] parts=entry.split("\\|",3);
-                if(!searchText.isEmpty() && !(parts[0].toLowerCase().contains(searchText.toLowerCase()) ||
-                        parts[1].toLowerCase().contains(searchText.toLowerCase()))) continue;
+                String[] p=entry.split("\\|",3);
+                if(!matches(p)) continue;
                 int col=row%2, r=row/2;
-                int cx=x+col*(colW+gap), cy=y+r*39;
-                drawModule(g,mx,my,cx,cy,colW,parts[0],parts[1],Integer.parseInt(parts[2]));
+                int cx=x+col*(colW+gap), cy=y+r*(rowHeight()+rowGap())-scroll;
+                if(cy+rowHeight()<contentTop() || cy>contentBottom()) { row++; continue; }
+                drawModule(g,mx,my,cx,cy,colW,p[0],p[1],Integer.parseInt(p[2]));
                 row++;
             }
-            if(row==0) g.drawString(font,"Ничего не найдено",x+8,y+12,MUTED,false);
+            if(row==0) g.drawString(font,"Ничего не найдено",x+8,y+14,MUTED,false);
+        }
+
+        private boolean matches(String[] p) {
+            return searchText.isEmpty() || p[0].toLowerCase().contains(searchText.toLowerCase()) ||
+                    p[1].toLowerCase().contains(searchText.toLowerCase());
         }
 
         private void drawModule(GuiGraphics g,int mx,int my,int x,int y,int w,String name,String desc,int id) {
             boolean active=isActive(id);
             boolean ready=id>=0;
-            boolean hover=inside(mx,my,x,y,w,33);
-            g.fill(x,y,x+w,y+33,hover?ROW_HOVER:ROW);
-            g.drawString(font,name,x+10,y+4,TEXT,false);
-            g.drawString(font,desc,x+10,y+18,MUTED,false);
+            boolean hover=inside(mx,my,x,y,w,rowHeight()) && !settingsOpen;
+            g.fill(x,y,x+w,y+rowHeight(),hover?ROW_HOVER:ROW);
+            g.fill(x,y,x+2,y+rowHeight(),active?PURPLE:0xFF343A49);
+            g.drawString(font,name,x+12,y+7,TEXT,false);
+            g.drawString(font,desc,x+12,y+23,MUTED,false);
             if(ready) {
-                int sx=x+w-42;
-                g.fill(sx,y+8,sx+29,y+24,active?accent:0xFF353E4D);
-                g.fill(active?sx+16:sx+2,y+10,active?sx+27:sx+13,y+22,0xFFF3F5FA);
+                int sx=x+w-43, sy=y+11;
+                g.fill(sx,sy,sx+31,sy+17,active?PURPLE:0xFF414654);
+                g.fill(active?sx+17:sx+2,sy+2,active?sx+29:sx+14,sy+15,0xFFF5F5FA);
             } else {
                 String tag="СКОРО";
                 int tw=font.width(tag);
-                g.drawString(font,tag,x+w-tw-10,y+12,0xFF69758A,false);
+                g.drawString(font,tag,x+w-tw-12,y+15,0xFF73798B,false);
             }
         }
 
@@ -363,28 +395,30 @@ public final class ClientFeatures {
             }
         }
 
-        private void drawBottomBar(GuiGraphics g) {
-            int x=px()+20,y=py()+ph()-31;
-            g.fill(x,y,px()+pw()-20,y+1,0xFF293344);
-            g.drawString(font,"NEXVER VISUALS  •  0.4.0",x,y+10,MUTED,false);
-            g.drawString(font,"RIGHT SHIFT  •  ЗАКРЫТЬ",px()+pw()-150,y+10,MUTED,false);
+        private void drawFooter(GuiGraphics g) {
+            int x=px()+20,y=py()+ph()-35;
+            g.fill(x,y,px()+pw()-20,y+1,0xFF292D3A);
+            g.drawString(font,"NEXVER VISUALS  •  0.5.0",x,y+12,MUTED,false);
+            String hint="RIGHT SHIFT  •  ЗАКРЫТЬ";
+            g.drawString(font,hint,px()+pw()-20-font.width(hint),y+12,MUTED,false);
         }
 
         private void drawSettings(GuiGraphics g,int mx,int my) {
-            int x=px()+pw()-206,y=py()+60;
-            g.fill(x+2,y+3,x+194,y+154,0xAA000000);
-            g.fill(x,y,x+190,y+150,0xFF171F2C);
-            g.drawString(font,"ОФОРМЛЕНИЕ",x+12,y+12,TEXT,false);
-            g.drawString(font,"ЦВЕТ АКЦЕНТА",x+12,y+34,MUTED,false);
-            int[] colors={0xFF65D6FF,0xFF9B83FF,0xFFFF78B7,0xFF75D6A0,0xFFFFB86B};
+            int x=px()+pw()-206,y=py()+58;
+            g.fill(x+3,y+4,x+197,y+164,0xAA000000);
+            g.fill(x,y,x+194,y+160,0xFF171B27);
+            g.fill(x,y,x+194,y+2,PURPLE);
+            g.drawString(font,"НАСТРОЙКИ",x+12,y+13,TEXT,false);
+            g.drawString(font,"ЦВЕТ АКЦЕНТА",x+12,y+37,MUTED,false);
+            int[] colors={0xFF8B5CF6,0xFF65D6FF,0xFFFF78B7,0xFF75D6A0,0xFFFFB86B};
             for(int i=0;i<colors.length;i++){
-                int cx=x+12+i*32;
-                g.fill(cx,y+55,cx+23,y+78,colors[i]);
-                if(accent==colors[i]) g.fill(cx-2,y+53,cx+25,y+55,0xFFFFFFFF);
+                int cx=x+12+i*33;
+                g.fill(cx,y+58,cx+24,y+82,colors[i]);
+                if(accent==colors[i]) g.fill(cx-2,y+56,cx+26,y+58,0xFFFFFFFF);
             }
-            g.drawString(font,"ИНТЕРФЕЙС",x+12,y+91,TEXT,false);
-            g.drawString(font,"Полупрозрачная панель",x+12,y+108,MUTED,false);
-            g.drawString(font,"Поиск модулей",x+12,y+126,MUTED,false);
+            g.drawString(font,"HUD",x+12,y+102,TEXT,false);
+            g.drawString(font,"Общий переключатель",x+12,y+120,MUTED,false);
+            g.drawString(font,hudEnabled?"ВКЛЮЧЁН":"ВЫКЛЮЧЕН",x+12,y+139,hudEnabled?PURPLE:MUTED,false);
         }
 
         private boolean inside(double mx,double my,int x,int y,int w,int h) {
@@ -396,26 +430,28 @@ public final class ClientFeatures {
             if(button!=0) return super.mouseClicked(mx,my,button);
             int x=px(),y=py(),right=x+pw()-126;
             if(settingsOpen) {
-                int sx=px()+pw()-206, sy=py()+60;
-                int[] colors={0xFF65D6FF,0xFF9B83FF,0xFFFF78B7,0xFF75D6A0,0xFFFFB86B};
-                for(int i=0;i<colors.length;i++) if(inside(mx,my,sx+12+i*32,sy+55,23,23)){accent=colors[i];saveConfig();return true;}
-                if(!inside(mx,my,sx,sy,190,150)) settingsOpen=false;
+                int sx=px()+pw()-206, sy=py()+58;
+                int[] colors={0xFF8B5CF6,0xFF65D6FF,0xFFFF78B7,0xFF75D6A0,0xFFFFB86B};
+                for(int i=0;i<colors.length;i++) if(inside(mx,my,sx+12+i*33,sy+58,24,24)){accent=colors[i];saveConfig();return true;}
+                if(inside(mx,my,sx+8,sy+112,178,38)){hudEnabled=!hudEnabled;saveConfig();return true;}
+                if(!inside(mx,my,sx,sy,194,160)) settingsOpen=false;
                 return true;
             }
             if(inside(mx,my,right+14,y+10,34,34)){settingsOpen=true;return true;}
-            if(inside(mx,my,right-112,y+10,112,34)){searchOpen=!searchOpen;if(!searchOpen)searchText="";return true;}
-            if(inside(mx,my,x+180,y+8,105,38)){page=0;return true;}
-            if(inside(mx,my,x+290,y+8,65,38)){page=1;return true;}
-            if(inside(mx,my,x+360,y+8,110,38)){page=2;return true;}
+            if(inside(mx,my,right-112,y+10,112,34)){searchOpen=!searchOpen;if(!searchOpen)searchText="";scroll=0;return true;}
 
-            int ix=innerX(), iy=py()+78, gap=8, colW=(innerW()-gap)/2, row=0;
+            int tabX=x+pw()/2-157;
+            if(inside(mx,my,tabX,y+9,115,36)){page=0;scroll=0;return true;}
+            if(inside(mx,my,tabX+117,y+9,72,36)){page=1;scroll=0;return true;}
+            if(inside(mx,my,tabX+192,y+9,112,36)){page=2;scroll=0;return true;}
+
+            int ix=contentX(), iy=contentTop(), gap=12, colW=(contentW()-gap)/2, row=0;
             for(String entry:modulesForPage()) {
-                String[] parts=entry.split("\\|",3);
-                if(!searchText.isEmpty() && !(parts[0].toLowerCase().contains(searchText.toLowerCase()) ||
-                        parts[1].toLowerCase().contains(searchText.toLowerCase()))) continue;
-                int cx=ix+(row%2)*(colW+gap), cy=iy+(row/2)*39;
-                if(inside(mx,my,cx,cy,colW,33)) {
-                    int id=Integer.parseInt(parts[2]);
+                String[] p=entry.split("\\|",3);
+                if(!matches(p)) continue;
+                int cx=ix+(row%2)*(colW+gap), cy=iy+(row/2)*(rowHeight()+rowGap())-scroll;
+                if(inside(mx,my,cx,cy,colW,rowHeight()) && cy>=contentTop() && cy+rowHeight()<=contentBottom()+1) {
+                    int id=Integer.parseInt(p[2]);
                     switch(id) {
                         case 1:showCrosshair=!showCrosshair;break;
                         case 2:setFullBright(Minecraft.getInstance(),!fullBright);break;
@@ -438,10 +474,19 @@ public final class ClientFeatures {
         }
 
         @Override
+        public boolean mouseScrolled(double mx,double my,double delta) {
+            int count=0;
+            for(String entry:modulesForPage()) if(matches(entry.split("\\|",3))) count++;
+            int rows=(count+1)/2;
+            int max=Math.max(0,rows*(rowHeight()+rowGap())-(contentBottom()-contentTop()));
+            scroll=Mth.clamp(scroll-(int)(delta*rowHeight()),0,max);
+            return true;
+        }
+
+        @Override
         public boolean charTyped(char codePoint,int modifiers) {
             if(searchOpen && !Character.isISOControl(codePoint) && searchText.length()<24) {
-                searchText+=codePoint;
-                return true;
+                searchText+=codePoint;scroll=0;return true;
             }
             return super.charTyped(codePoint,modifiers);
         }
@@ -449,10 +494,10 @@ public final class ClientFeatures {
         @Override
         public boolean keyPressed(int keyCode,int scanCode,int modifiers) {
             if(searchOpen && keyCode==GLFW.GLFW_KEY_BACKSPACE && !searchText.isEmpty()) {
-                searchText=searchText.substring(0,searchText.length()-1);
-                return true;
+                searchText=searchText.substring(0,searchText.length()-1);scroll=0;return true;
             }
             if(keyCode==GLFW.GLFW_KEY_RIGHT_SHIFT||keyCode==GLFW.GLFW_KEY_ESCAPE) {
+                if(settingsOpen){settingsOpen=false;return true;}
                 if(searchOpen){searchOpen=false;searchText="";return true;}
                 onClose();return true;
             }
@@ -461,4 +506,5 @@ public final class ClientFeatures {
 
         @Override public boolean isPauseScreen(){return false;}
     }
+}
 }
