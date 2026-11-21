@@ -396,4 +396,3 @@ public final class ClientFeatures {
         }
     }
 }
-}
