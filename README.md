@@ -1,14 +1,24 @@
 # Nexver Visuals
 
-Forge 1.20.1 visual customization mod project.
+Клиентский визуальный мод для Minecraft **1.20.1 / Forge 47.x / Java 17**.
 
-## Automated builds
-The GitHub Actions workflow is configured in `.github/workflows/build.yml`.
-Once the Gradle project files are added, push to `main` or run the workflow manually from Actions. The compiled JAR will be attached as the `Nexver-Visuals-JAR` artifact.
+## Версия 0.3.0 — Русская версия
 
-## Target
-- Minecraft 1.20.1
-- Forge 47.x
-- Java 17
+- Полностью русское меню Nexver.
+- HUD: FPS, координаты, пинг, Keystrokes, эффекты зелий и предмет в руке.
+- Визуалы: кастомный прицел и полная яркость.
+- Горячие клавиши: Right Shift — меню, K — переключение яркости.
+- Настройки сохраняются в `config/nexver-visuals.properties`.
+- Цвет акцента интерфейса можно выбрать в настройках.
 
-Project scaffolding and implementation are being added in stages.
+## Установка
+
+1. Установи Minecraft Forge 1.20.1 (47.x) и Java 17.
+2. Скачай JAR из GitHub Actions artifact.
+3. Помести JAR в папку `.minecraft/mods`.
+4. Запусти профиль Forge 1.20.1.
+
+## Сборка
+
+GitHub Actions автоматически собирает мод при каждом push в `main`.
+Артефакт называется `Nexver-Visuals-v0.3.0-RU-Forge-1.20.1`.
