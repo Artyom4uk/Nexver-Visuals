@@ -252,8 +252,8 @@ public final class ClientFeatures {
 
         private NexverMenu() { super(Component.literal("NEXVER VISUALS")); }
 
-        private int pw() { return Math.min(760, width - 28); }
-        private int ph() { return Math.min(410, height - 24); }
+        private int pw() { return Math.min(720, width - 28); }
+        private int ph() { return Math.min(382, height - 24); }
         private int px() { return (width - pw()) / 2; }
         private int py() { return (height - ph()) / 2; }
         private int innerX() { return px() + 22; }
@@ -314,7 +314,7 @@ public final class ClientFeatures {
         private String[] modulesForPage() { return page==0?VISUALS:page==1?HUD:UTILITIES; }
 
         private void drawModules(GuiGraphics g,int mx,int my) {
-            int x=innerX(), y=py()+76, gap=12, colW=(innerW()-gap)/2;
+            int x=innerX(), y=py()+78, gap=8, colW=(innerW()-gap)/2;
             String[] entries=modulesForPage();
             int row=0;
             for(String entry:entries) {
@@ -322,7 +322,7 @@ public final class ClientFeatures {
                 if(!searchText.isEmpty() && !(parts[0].toLowerCase().contains(searchText.toLowerCase()) ||
                         parts[1].toLowerCase().contains(searchText.toLowerCase()))) continue;
                 int col=row%2, r=row/2;
-                int cx=x+col*(colW+gap), cy=y+r*43;
+                int cx=x+col*(colW+gap), cy=y+r*39;
                 drawModule(g,mx,my,cx,cy,colW,parts[0],parts[1],Integer.parseInt(parts[2]));
                 row++;
             }
@@ -332,18 +332,18 @@ public final class ClientFeatures {
         private void drawModule(GuiGraphics g,int mx,int my,int x,int y,int w,String name,String desc,int id) {
             boolean active=isActive(id);
             boolean ready=id>=0;
-            boolean hover=inside(mx,my,x,y,w,37);
-            g.fill(x,y,x+w,y+37,hover?ROW_HOVER:ROW);
-            g.drawString(font,name,x+11,y+6,TEXT,false);
-            g.drawString(font,desc,x+11,y+21,MUTED,false);
+            boolean hover=inside(mx,my,x,y,w,33);
+            g.fill(x,y,x+w,y+33,hover?ROW_HOVER:ROW);
+            g.drawString(font,name,x+10,y+4,TEXT,false);
+            g.drawString(font,desc,x+10,y+18,MUTED,false);
             if(ready) {
                 int sx=x+w-42;
-                g.fill(sx,y+10,sx+31,y+26,active?accent:0xFF353E4D);
-                g.fill(active?sx+17:sx+3,y+12,active?sx+29:sx+15,y+24,0xFFF3F5FA);
+                g.fill(sx,y+8,sx+29,y+24,active?accent:0xFF353E4D);
+                g.fill(active?sx+16:sx+2,y+10,active?sx+27:sx+13,y+22,0xFFF3F5FA);
             } else {
                 String tag="СКОРО";
                 int tw=font.width(tag);
-                g.drawString(font,tag,x+w-tw-11,y+14,0xFF69758A,false);
+                g.drawString(font,tag,x+w-tw-10,y+12,0xFF69758A,false);
             }
         }
 
@@ -366,7 +366,7 @@ public final class ClientFeatures {
         private void drawBottomBar(GuiGraphics g) {
             int x=px()+20,y=py()+ph()-31;
             g.fill(x,y,px()+pw()-20,y+1,0xFF293344);
-            g.drawString(font,"NEXVER CLIENT",x,y+10,MUTED,false);
+            g.drawString(font,"NEXVER VISUALS  •  0.4.0",x,y+10,MUTED,false);
             g.drawString(font,"RIGHT SHIFT  •  ЗАКРЫТЬ",px()+pw()-150,y+10,MUTED,false);
         }
 
@@ -403,18 +403,18 @@ public final class ClientFeatures {
                 return true;
             }
             if(inside(mx,my,right+14,y+10,34,34)){settingsOpen=true;return true;}
-            if(inside(mx,my,right-14,y+10,30,34)){searchOpen=!searchOpen;if(!searchOpen)searchText="";return true;}
+            if(inside(mx,my,right-112,y+10,112,34)){searchOpen=!searchOpen;if(!searchOpen)searchText="";return true;}
             if(inside(mx,my,x+180,y+8,105,38)){page=0;return true;}
             if(inside(mx,my,x+290,y+8,65,38)){page=1;return true;}
             if(inside(mx,my,x+360,y+8,110,38)){page=2;return true;}
 
-            int ix=innerX(), iy=py()+76, gap=12, colW=(innerW()-gap)/2, row=0;
+            int ix=innerX(), iy=py()+78, gap=8, colW=(innerW()-gap)/2, row=0;
             for(String entry:modulesForPage()) {
                 String[] parts=entry.split("\\|",3);
                 if(!searchText.isEmpty() && !(parts[0].toLowerCase().contains(searchText.toLowerCase()) ||
                         parts[1].toLowerCase().contains(searchText.toLowerCase()))) continue;
-                int cx=ix+(row%2)*(colW+gap), cy=iy+(row/2)*43;
-                if(inside(mx,my,cx,cy,colW,37)) {
+                int cx=ix+(row%2)*(colW+gap), cy=iy+(row/2)*39;
+                if(inside(mx,my,cx,cy,colW,33)) {
                     int id=Integer.parseInt(parts[2]);
                     switch(id) {
                         case 1:showCrosshair=!showCrosshair;break;
