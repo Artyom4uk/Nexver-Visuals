@@ -209,135 +209,179 @@ public final class ClientFeatures {
     }
 
     private static final class NexverMenu extends Screen {
-        private static final int BG = 0xEE0A0E16, PANEL = 0xFF101722, CARD = 0xFF171F2B;
-        private static final int CARD_HOVER = 0xFF202B3A, MUTED = 0xFF7F8DA1, WHITE = 0xFFF0F4FA;
-        private int page = 1;
+        private static final int PANEL = 0xF20D111B, SURFACE = 0xFF141A26;
+        private static final int ROW = 0xFF191F2C, ROW_HOVER = 0xFF222B3B;
+        private static final int MUTED = 0xFF778399, TEXT = 0xFFE8EDF6;
+        private static final String[] VISUALS = {
+                "Aspect Ratio|Формат игрового изображения|-1",
+                "Crosshair|Настраиваемый прицел|1",
+                "Full Bright|Полная яркость|2",
+                "China Hit|Эффект попадания|-1",
+                "Custom Hand|Настройка руки|-1",
+                "Hit Color|Цвет попадания|-1",
+                "Hitbox Customizer|Визуализация хитбоксов|-1",
+                "Jump Circles|Круги при прыжке|-1",
+                "Particles|Частицы|-1",
+                "Render Tweaks|Настройки рендера|-1",
+                "Scope Overlay|Прицел с увеличением|-1",
+                "Tracer Lines|Декоративные линии|-1"
+        };
+        private static final String[] HUD = {
+                "Item Overlay|Предмет в руке|15",
+                "Keystrokes|Клавиши движения|13",
+                "Potions|Эффекты зелий|14",
+                "Watermark|Никнейм, пинг и FPS|-1",
+                "SpaceHUD|Игровая информация|-1",
+                "FPS Counter|Частота кадров|10",
+                "Coordinates|Координаты игрока|11",
+                "Ping|Задержка соединения|12"
+        };
+        private static final String[] UTILITIES = {
+                "HUD Background|Фон элементов HUD|20",
+                "HUD Toggle|Быстрое скрытие HUD|21"
+        };
+
+        private int page = 0;
+        private boolean searchOpen = false;
+        private boolean settingsOpen = false;
+        private String searchText = "";
         private final long openedAt = Util.getMillis();
 
         private NexverMenu() { super(Component.literal("NEXVER VISUALS")); }
 
-        private int panelWidth() { return Math.min(620, this.width - 28); }
-        private int panelHeight() { return Math.min(360, this.height - 24); }
-        private int left() { return (this.width - panelWidth()) / 2; }
-        private int top() { return (this.height - panelHeight()) / 2; }
-        private int contentLeft() { return left() + 20; }
-        private int contentWidth() { return panelWidth() - 40; }
+        private int pw() { return Math.min(760, width - 28); }
+        private int ph() { return Math.min(410, height - 24); }
+        private int px() { return (width - pw()) / 2; }
+        private int py() { return (height - ph()) / 2; }
+        private int innerX() { return px() + 22; }
+        private int innerW() { return pw() - 44; }
 
         @Override
-        public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
-            gui.fill(0, 0, width, height, 0x99030810);
-            int l = left(), t = top(), w = panelWidth(), h = panelHeight();
-            gui.fill(l - 2, t - 2, l + w + 2, t + h + 2, 0x50000000);
-            gui.fill(l, t, l + w, t + h, BG);
-            gui.fill(l + 1, t + 1, l + w - 1, t + h - 1, PANEL);
-            gui.fill(l, t, l + w, t + 2, accent);
+        public void render(GuiGraphics g, int mx, int my, float partialTick) {
+            g.fill(0, 0, width, height, 0x99040810);
+            int x=px(), y=py(), w=pw(), h=ph();
+            g.fill(x-3,y-3,x+w+3,y+h+3,0x44000000);
+            g.fill(x,y,x+w,y+h,PANEL);
+            g.fill(x+1,y+1,x+w-1,y+h-1,SURFACE);
+            g.fill(x,y,x+w,y+2,accent);
 
-            drawBrand(gui);
-            drawTabs(gui, mouseX, mouseY);
-            gui.fill(l + 18, t + 70, l + w - 18, t + 71, 0xFF293444);
+            drawHeader(g,mx,my);
+            g.fill(x+18,y+57,x+w-18,y+58,0xFF293344);
+            drawModules(g,mx,my);
+            drawBottomBar(g);
+            if(settingsOpen) drawSettings(g,mx,my);
 
-            if (page == 0) drawVisualPage(gui, mouseX, mouseY);
-            else if (page == 1) drawHudPage(gui, mouseX, mouseY);
-            else drawUtilitiesPage(gui, mouseX, mouseY);
-
-            float progress = Mth.clamp((Util.getMillis() - openedAt) / 150.0f, 0.0f, 1.0f);
-            if (progress < 1.0f) gui.fill(l, t, l + w, t + h,
-                    ((int)(0x20 * (1.0f - progress))) << 24);
-            super.render(gui, mouseX, mouseY, partialTick);
+            float a=Mth.clamp((Util.getMillis()-openedAt)/180.0f,0.0f,1.0f);
+            if(a<1.0f) g.fill(x,y,x+w,y+h,((int)(0x18*(1.0f-a)))<<24);
+            super.render(g,mx,my,partialTick);
         }
 
-        private void drawBrand(GuiGraphics gui) {
-            int x = left() + 20, y = top() + 15;
-            gui.drawString(font, "NEXVER", x, y, WHITE, false);
-            gui.drawString(font, "VISUALS", x + font.width("NEXVER") + 6, y, accent, false);
-            gui.drawString(font, "CLIENT  /  0.3.2", x, y + 13, MUTED, false);
-            int sx = left() + panelWidth() - 83;
-            gui.fill(sx, y + 2, sx + 6, y + 8, 0xFF65D68A);
-            gui.drawString(font, "АКТИВЕН", sx + 11, y, 0xFF9CB4A7, false);
+        private void drawHeader(GuiGraphics g,int mx,int my) {
+            int x=px(),y=py();
+            g.fill(x+20,y+17,x+40,y+37,accent);
+            g.drawString(font,"N",x+26,y+23,0xFF101522,false);
+            g.drawString(font,"NEXVER",x+48,y+17,TEXT,false);
+            g.drawString(font,"VISUALS",x+48+font.width("NEXVER")+6,y+17,accent,false);
+
+            String[] tabs={"ВИЗУАЛЫ","HUD","УТИЛИТЫ"};
+            int[] widths={88,52,83};
+            int tx=x+190;
+            for(int i=0;i<tabs.length;i++){
+                boolean selected=page==i;
+                int tw=widths[i];
+                if(selected) g.fill(tx-10,y+12,tx+tw,y+42,0xFF202B3B);
+                else if(inside(mx,my,tx-10,y+12,tw+10,30)) g.fill(tx-10,y+12,tx+tw,y+42,0xFF192331);
+                g.drawString(font,tabs[i],tx,y+23,selected?TEXT:MUTED,false);
+                if(selected) g.fill(tx-10,y+40,tx+tw,y+42,accent);
+                tx+=tw+22;
+            }
+
+            int right=x+pw()-126;
+            if(searchOpen){
+                g.fill(right-105,y+14,right+2,y+39,0xFF202938);
+                g.drawString(font,searchText.isEmpty()?"Поиск...":searchText,right-98,y+23,searchText.isEmpty()?MUTED:TEXT,false);
+            } else {
+                g.drawString(font,"⌕",right-8,y+20,inside(mx,my,right-13,y+12,22,28)?TEXT:MUTED,false);
+            }
+            g.drawString(font,"⚙",right+20,y+20,settingsOpen?accent:MUTED,false);
+            g.fill(right+56,y+16,right+76,y+36,0xFF303B4D);
+            g.fill(right+71,y+31,right+77,y+37,0xFF65D68A);
         }
 
-        private void drawTabs(GuiGraphics gui, int mx, int my) {
-            String[] labels = {"ВИЗУАЛЫ", "HUD", "УТИЛИТЫ"};
-            int x = left() + 17, y = top() + 42;
-            for (int i = 0; i < labels.length; i++) {
-                int tx = x + i * 101;
-                boolean selected = page == i;
-                boolean hover = inside(mx, my, tx - 4, y - 4, 91, 24);
-                if (selected || hover) gui.fill(tx - 4, y - 4, tx + 87, y + 20,
-                        selected ? 0xFF202D3D : 0xFF182331);
-                gui.drawString(font, labels[i], tx + 7, y + 3,
-                        selected ? accent : 0xFFB4C0CE, false);
-                if (selected) gui.fill(tx - 4, y + 18, tx + 87, y + 20, accent);
+        private String[] modulesForPage() { return page==0?VISUALS:page==1?HUD:UTILITIES; }
+
+        private void drawModules(GuiGraphics g,int mx,int my) {
+            int x=innerX(), y=py()+76, gap=12, colW=(innerW()-gap)/2;
+            String[] entries=modulesForPage();
+            int row=0;
+            for(String entry:entries) {
+                String[] parts=entry.split("\\|",3);
+                if(!searchText.isEmpty() && !(parts[0].toLowerCase().contains(searchText.toLowerCase()) ||
+                        parts[1].toLowerCase().contains(searchText.toLowerCase()))) continue;
+                int col=row%2, r=row/2;
+                int cx=x+col*(colW+gap), cy=y+r*43;
+                drawModule(g,mx,my,cx,cy,colW,parts[0],parts[1],Integer.parseInt(parts[2]));
+                row++;
+            }
+            if(row==0) g.drawString(font,"Ничего не найдено",x+8,y+12,MUTED,false);
+        }
+
+        private void drawModule(GuiGraphics g,int mx,int my,int x,int y,int w,String name,String desc,int id) {
+            boolean active=isActive(id);
+            boolean ready=id>=0;
+            boolean hover=inside(mx,my,x,y,w,37);
+            g.fill(x,y,x+w,y+37,hover?ROW_HOVER:ROW);
+            g.drawString(font,name,x+11,y+6,TEXT,false);
+            g.drawString(font,desc,x+11,y+21,MUTED,false);
+            if(ready) {
+                int sx=x+w-42;
+                g.fill(sx,y+10,sx+31,y+26,active?accent:0xFF353E4D);
+                g.fill(active?sx+17:sx+3,y+12,active?sx+29:sx+15,y+24,0xFFF3F5FA);
+            } else {
+                String tag="СКОРО";
+                int tw=font.width(tag);
+                g.drawString(font,tag,x+w-tw-11,y+14,0xFF69758A,false);
             }
         }
 
-        private void drawPageHeading(GuiGraphics gui, String title, String subtitle) {
-            int x = contentLeft(), y = top() + 82;
-            gui.drawString(font, title, x, y, WHITE, false);
-            gui.drawString(font, subtitle, x, y + 13, MUTED, false);
+        private boolean isActive(int id) {
+            switch(id) {
+                case 1:return showCrosshair;
+                case 2:return fullBright;
+                case 10:return showFps;
+                case 11:return showCoordinates;
+                case 12:return showPing;
+                case 13:return showKeystrokes;
+                case 14:return showPotions;
+                case 15:return showItemOverlay;
+                case 20:return hudBackground;
+                case 21:return hudEnabled;
+                default:return false;
+            }
         }
 
-        private void drawHudPage(GuiGraphics gui, int mx, int my) {
-            drawPageHeading(gui, "ЭЛЕМЕНТЫ HUD", "Информация поверх игрового мира");
-            int x = contentLeft(), y = top() + 112, gap = 8;
-            int cardW = (contentWidth() - gap) / 2;
-            drawCard(gui,mx,my,x,y,cardW,"СЧЁТЧИК FPS","Частота кадров",showFps,0);
-            drawCard(gui,mx,my,x+cardW+gap,y,cardW,"КООРДИНАТЫ","Позиция в мире",showCoordinates,1);
-            drawCard(gui,mx,my,x,y+42,cardW,"СЕТЕВОЙ ПИНГ","Задержка соединения",showPing,2);
-            drawCard(gui,mx,my,x+cardW+gap,y+42,cardW,"КЛАВИШИ","WASD и прыжок",showKeystrokes,3);
-            drawCard(gui,mx,my,x,y+84,cardW,"ЭФФЕКТЫ ЗЕЛИЙ","Название и длительность",showPotions,4);
-            drawCard(gui,mx,my,x+cardW+gap,y+84,cardW,"ПРЕДМЕТ В РУКЕ","Название и количество",showItemOverlay,5);
-            drawFooter(gui, "Настройки сохраняются автоматически");
+        private void drawBottomBar(GuiGraphics g) {
+            int x=px()+20,y=py()+ph()-31;
+            g.fill(x,y,px()+pw()-20,y+1,0xFF293344);
+            g.drawString(font,"NEXVER CLIENT",x,y+10,MUTED,false);
+            g.drawString(font,"RIGHT SHIFT  •  ЗАКРЫТЬ",px()+pw()-150,y+10,MUTED,false);
         }
 
-        private void drawVisualPage(GuiGraphics gui, int mx, int my) {
-            drawPageHeading(gui, "ВИЗУАЛЬНЫЕ ЭФФЕКТЫ", "Внешний вид игрового интерфейса");
-            int x = contentLeft(), y = top() + 112, gap = 8;
-            int cardW = (contentWidth() - gap) / 2;
-            drawCard(gui,mx,my,x,y,cardW,"СВОЙ ПРИЦЕЛ","Минималистичный цветной прицел",showCrosshair,6);
-            gui.fill(x + cardW + gap, y, x + 2 * cardW + gap, y + 36, CARD);
-            gui.drawString(font, "ЛОКАЛЬНЫЕ ЭФФЕКТЫ", x + cardW + gap + 10, y + 6, WHITE, false);
-            gui.drawString(font, "Новые визуалы добавим", x + cardW + gap + 10, y + 20, MUTED, false);
-            drawFooter(gui, "Только локальные визуальные настройки");
-        }
-
-        private void drawUtilitiesPage(GuiGraphics gui, int mx, int my) {
-            drawPageHeading(gui, "УТИЛИТЫ", "Быстрые переключатели и оформление");
-            int x = contentLeft(), y = top() + 112, gap = 8;
-            int cardW = (contentWidth() - gap) / 2;
-            drawCard(gui,mx,my,x,y,cardW,"ПОЛНАЯ ЯРКОСТЬ","Горячая клавиша K",fullBright,7);
-            drawCard(gui,mx,my,x+cardW+gap,y,cardW,"ФОН HUD","Подложка под текст",hudBackground,8);
-
-            gui.drawString(font, "ЦВЕТ АКЦЕНТА", x, y + 53, WHITE, false);
-            gui.drawString(font, "Цвет переключателей и подсветки", x, y + 66, MUTED, false);
+        private void drawSettings(GuiGraphics g,int mx,int my) {
+            int x=px()+pw()-206,y=py()+60;
+            g.fill(x+2,y+3,x+194,y+154,0xAA000000);
+            g.fill(x,y,x+190,y+150,0xFF171F2C);
+            g.drawString(font,"ОФОРМЛЕНИЕ",x+12,y+12,TEXT,false);
+            g.drawString(font,"ЦВЕТ АКЦЕНТА",x+12,y+34,MUTED,false);
             int[] colors={0xFF65D6FF,0xFF9B83FF,0xFFFF78B7,0xFF75D6A0,0xFFFFB86B};
-            String[] names={"ЛЁД","ФИОЛЕТ","РОЗОВЫЙ","МЯТНЫЙ","ЯНТАРЬ"};
-            int swatchY = y + 88;
             for(int i=0;i<colors.length;i++){
-                int cx = x + i * 86;
-                boolean selected = accent == colors[i];
-                gui.fill(cx, swatchY, cx + 78, swatchY + 27, selected ? 0xFF243448 : CARD);
-                gui.fill(cx + 7, swatchY + 7, cx + 19, swatchY + 19, colors[i]);
-                gui.drawString(font, names[i], cx + 24, swatchY + 10, selected ? WHITE : MUTED, false);
+                int cx=x+12+i*32;
+                g.fill(cx,y+55,cx+23,y+78,colors[i]);
+                if(accent==colors[i]) g.fill(cx-2,y+53,cx+25,y+55,0xFFFFFFFF);
             }
-            drawFooter(gui, "МЕНЮ: RIGHT SHIFT     •     ЯРКОСТЬ: K");
-        }
-
-        private void drawFooter(GuiGraphics gui, String text) {
-            gui.fill(left() + 18, top() + panelHeight() - 31,
-                    left() + panelWidth() - 18, top() + panelHeight() - 30, 0xFF293444);
-            gui.drawString(font, text, contentLeft(), top() + panelHeight() - 20, MUTED, false);
-        }
-
-        private void drawCard(GuiGraphics gui,int mx,int my,int x,int y,int w,String title,String desc,boolean enabled,int id) {
-            boolean hover = inside(mx,my,x,y,w,36);
-            gui.fill(x,y,x+w,y+36,hover?CARD_HOVER:CARD);
-            gui.fill(x,y,x+2,y+36,enabled?accent:0xFF344255);
-            gui.drawString(font,title,x+9,y+5,WHITE,false);
-            gui.drawString(font,desc,x+9,y+19,MUTED,false);
-            int sx = x + w - 34;
-            gui.fill(sx,y+10,sx+25,y+25,enabled?accent:0xFF354153);
-            gui.fill(enabled?sx+13:sx+2,y+12,enabled?sx+23:sx+12,y+23,0xFFF4F7FB);
+            g.drawString(font,"ИНТЕРФЕЙС",x+12,y+91,TEXT,false);
+            g.drawString(font,"Полупрозрачная панель",x+12,y+108,MUTED,false);
+            g.drawString(font,"Поиск модулей",x+12,y+126,MUTED,false);
         }
 
         private boolean inside(double mx,double my,int x,int y,int w,int h) {
@@ -347,52 +391,71 @@ public final class ClientFeatures {
         @Override
         public boolean mouseClicked(double mx,double my,int button) {
             if(button!=0) return super.mouseClicked(mx,my,button);
+            int x=px(),y=py(),right=x+pw()-126;
+            if(settingsOpen) {
+                int sx=px()+pw()-206, sy=py()+60;
+                int[] colors={0xFF65D6FF,0xFF9B83FF,0xFFFF78B7,0xFF75D6A0,0xFFFFB86B};
+                for(int i=0;i<colors.length;i++) if(inside(mx,my,sx+12+i*32,sy+55,23,23)){accent=colors[i];saveConfig();return true;}
+                if(!inside(mx,my,sx,sy,190,150)) settingsOpen=false;
+                return true;
+            }
+            if(inside(mx,my,right+12,y+10,27,34)){settingsOpen=true;return true;}
+            if(inside(mx,my,right-112,y+10,32,34)){searchOpen=!searchOpen;if(!searchOpen)searchText="";return true;}
+            if(inside(mx,my,x+180,y+8,105,38)){page=0;return true;}
+            if(inside(mx,my,x+290,y+8,65,38)){page=1;return true;}
+            if(inside(mx,my,x+360,y+8,110,38)){page=2;return true;}
 
-            int tabX = left() + 13, tabY = top() + 37;
-            if (inside(mx,my,tabX,tabY,96,29)) { page=0; return true; }
-            if (inside(mx,my,tabX+101,tabY,96,29)) { page=1; return true; }
-            if (inside(mx,my,tabX+202,tabY,96,29)) { page=2; return true; }
-
-            int x=contentLeft(), y=top()+112, gap=8, cardW=(contentWidth()-gap)/2;
-            if(page==1){
-                int id=-1;
-                if(inside(mx,my,x,y,cardW,36)) id=0;
-                else if(inside(mx,my,x+cardW+gap,y,cardW,36)) id=1;
-                else if(inside(mx,my,x,y+42,cardW,36)) id=2;
-                else if(inside(mx,my,x+cardW+gap,y+42,cardW,36)) id=3;
-                else if(inside(mx,my,x,y+84,cardW,36)) id=4;
-                else if(inside(mx,my,x+cardW+gap,y+84,cardW,36)) id=5;
-                switch(id){
-                    case 0: showFps=!showFps; break;
-                    case 1: showCoordinates=!showCoordinates; break;
-                    case 2: showPing=!showPing; break;
-                    case 3: showKeystrokes=!showKeystrokes; break;
-                    case 4: showPotions=!showPotions; break;
-                    case 5: showItemOverlay=!showItemOverlay; break;
-                    default: break;
-                }
-                if(id>=0) saveConfig();
-            } else if(page==0){
-                if(inside(mx,my,x,y,cardW,36)){showCrosshair=!showCrosshair;saveConfig();}
-            } else {
-                if(inside(mx,my,x,y,cardW,36)){setFullBright(Minecraft.getInstance(),!fullBright);}
-                else if(inside(mx,my,x+cardW+gap,y,cardW,36)){hudBackground=!hudBackground;saveConfig();}
-                else {
-                    int[] colors={0xFF65D6FF,0xFF9B83FF,0xFFFF78B7,0xFF75D6A0,0xFFFFB86B};
-                    int swatchY=y+88;
-                    for(int i=0;i<colors.length;i++){
-                        int cx=x+i*86;
-                        if(inside(mx,my,cx,swatchY,78,27)){accent=colors[i];saveConfig();break;}
+            int ix=innerX(), iy=py()+76, gap=12, colW=(innerW()-gap)/2, row=0;
+            for(String entry:modulesForPage()) {
+                String[] parts=entry.split("\\|",3);
+                if(!searchText.isEmpty() && !(parts[0].toLowerCase().contains(searchText.toLowerCase()) ||
+                        parts[1].toLowerCase().contains(searchText.toLowerCase()))) continue;
+                int cx=ix+(row%2)*(colW+gap), cy=iy+(row/2)*43;
+                if(inside(mx,my,cx,cy,colW,37)) {
+                    int id=Integer.parseInt(parts[2]);
+                    switch(id) {
+                        case 1:showCrosshair=!showCrosshair;break;
+                        case 2:setFullBright(Minecraft.getInstance(),!fullBright);break;
+                        case 10:showFps=!showFps;break;
+                        case 11:showCoordinates=!showCoordinates;break;
+                        case 12:showPing=!showPing;break;
+                        case 13:showKeystrokes=!showKeystrokes;break;
+                        case 14:showPotions=!showPotions;break;
+                        case 15:showItemOverlay=!showItemOverlay;break;
+                        case 20:hudBackground=!hudBackground;break;
+                        case 21:hudEnabled=!hudEnabled;break;
+                        default:return true;
                     }
+                    saveConfig();
+                    return true;
                 }
+                row++;
             }
             return true;
         }
 
-        @Override public boolean isPauseScreen(){return false;}
-        @Override public boolean keyPressed(int keyCode,int scanCode,int modifiers){
-            if(keyCode==GLFW.GLFW_KEY_RIGHT_SHIFT||keyCode==GLFW.GLFW_KEY_ESCAPE){onClose();return true;}
+        @Override
+        public boolean charTyped(char codePoint,int modifiers) {
+            if(searchOpen && !Character.isISOControl(codePoint) && searchText.length()<24) {
+                searchText+=codePoint;
+                return true;
+            }
+            return super.charTyped(codePoint,modifiers);
+        }
+
+        @Override
+        public boolean keyPressed(int keyCode,int scanCode,int modifiers) {
+            if(searchOpen && keyCode==GLFW.GLFW_KEY_BACKSPACE && !searchText.isEmpty()) {
+                searchText=searchText.substring(0,searchText.length()-1);
+                return true;
+            }
+            if(keyCode==GLFW.GLFW_KEY_RIGHT_SHIFT||keyCode==GLFW.GLFW_KEY_ESCAPE) {
+                if(searchOpen){searchOpen=false;searchText="";return true;}
+                onClose();return true;
+            }
             return super.keyPressed(keyCode,scanCode,modifiers);
         }
+
+        @Override public boolean isPauseScreen(){return false;}
     }
 }
