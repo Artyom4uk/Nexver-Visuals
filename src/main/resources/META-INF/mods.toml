@@ -4,10 +4,10 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="nexver_visuals"
-version="0.1.0"
+version="0.3.0"
 displayName="Nexver Visuals"
 authors="Nexver"
-description='''A lightweight client-side visual HUD and interface for Minecraft 1.20.1.'''
+description='''Русский клиентский HUD и набор визуальных настроек для Minecraft 1.20.1.'''
 
 [[dependencies.nexver_visuals]]
 modId="forge"
