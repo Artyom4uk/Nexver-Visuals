@@ -46,7 +46,7 @@ public final class ClientFeatures {
     private static boolean fullBright = false;
     private static boolean hudEnabled = true;
     private static double previousGamma = 0.5D;
-    private static int accent = 0xFF65D6FF;
+    private static int accent = 0xFF8B5CF6;
 
     static { loadConfig(); }
     private ClientFeatures() {}
@@ -72,7 +72,7 @@ public final class ClientFeatures {
             showItemOverlay = Boolean.parseBoolean(p.getProperty("hud.item", "true"));
             fullBright = Boolean.parseBoolean(p.getProperty("visual.fullbright", "false"));
             hudEnabled = Boolean.parseBoolean(p.getProperty("hud.enabled", "true"));
-            accent = Integer.parseUnsignedInt(p.getProperty("appearance.accent", "FF65D6FF"), 16);
+            accent = Integer.parseUnsignedInt(p.getProperty("appearance.accent", "FF8B5CF6"), 16);
         } catch (Exception ignored) {}
     }
 
