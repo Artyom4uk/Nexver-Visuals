@@ -44,6 +44,7 @@ public final class ClientFeatures {
     private static boolean showPotions = true;
     private static boolean showItemOverlay = true;
     private static boolean fullBright = false;
+    private static boolean hudEnabled = true;
     private static double previousGamma = 0.5D;
     private static int accent = 0xFF65D6FF;
 
@@ -70,6 +71,7 @@ public final class ClientFeatures {
             showPotions = Boolean.parseBoolean(p.getProperty("hud.potions", "true"));
             showItemOverlay = Boolean.parseBoolean(p.getProperty("hud.item", "true"));
             fullBright = Boolean.parseBoolean(p.getProperty("visual.fullbright", "false"));
+            hudEnabled = Boolean.parseBoolean(p.getProperty("hud.enabled", "true"));
             accent = Integer.parseUnsignedInt(p.getProperty("appearance.accent", "FF65D6FF"), 16);
         } catch (Exception ignored) {}
     }
@@ -85,6 +87,7 @@ public final class ClientFeatures {
         p.setProperty("hud.potions", Boolean.toString(showPotions));
         p.setProperty("hud.item", Boolean.toString(showItemOverlay));
         p.setProperty("visual.fullbright", Boolean.toString(fullBright));
+        p.setProperty("hud.enabled", Boolean.toString(hudEnabled));
         p.setProperty("appearance.accent", String.format("%08X", accent));
         try {
             Files.createDirectories(CONFIG.getParent());
@@ -119,7 +122,7 @@ public final class ClientFeatures {
         @SubscribeEvent
         public static void onRenderGui(RenderGuiEvent.Post event) {
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player == null || mc.options.hideGui || mc.screen != null) return;
+            if (mc.player == null || mc.options.hideGui || mc.screen != null || !hudEnabled) return;
             GuiGraphics gui = event.getGuiGraphics();
             int x = 10, y = 10, line = 0;
 
@@ -399,8 +402,8 @@ public final class ClientFeatures {
                 if(!inside(mx,my,sx,sy,190,150)) settingsOpen=false;
                 return true;
             }
-            if(inside(mx,my,right+12,y+10,27,34)){settingsOpen=true;return true;}
-            if(inside(mx,my,right-112,y+10,32,34)){searchOpen=!searchOpen;if(!searchOpen)searchText="";return true;}
+            if(inside(mx,my,right+14,y+10,34,34)){settingsOpen=true;return true;}
+            if(inside(mx,my,right-14,y+10,30,34)){searchOpen=!searchOpen;if(!searchOpen)searchText="";return true;}
             if(inside(mx,my,x+180,y+8,105,38)){page=0;return true;}
             if(inside(mx,my,x+290,y+8,65,38)){page=1;return true;}
             if(inside(mx,my,x+360,y+8,110,38)){page=2;return true;}
