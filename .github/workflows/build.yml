@@ -1,4 +1,4 @@
-name: Nexver Visuals v0.4.0 — Русская версия
+name: Nexver Visuals v0.5.0 — Русская версия
 
 on:
   push:
@@ -25,10 +25,10 @@ jobs:
       - name: Переименовать JAR
         run: |
           mkdir -p release
-          cp build/libs/*.jar release/Nexver-Visuals-v0.4.0-RU-Forge-1.20.1.jar
+          cp build/libs/*.jar release/Nexver-Visuals-v0.5.0-RU-Forge-1.20.1.jar
       - name: Загрузить готовый мод
         uses: actions/upload-artifact@v4
         with:
-          name: Nexver-Visuals-v0.4.0-RU-Forge-1.20.1
+          name: Nexver-Visuals-v0.5.0-RU-Forge-1.20.1
           path: release/*.jar
           if-no-files-found: error
